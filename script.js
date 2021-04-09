@@ -1,41 +1,74 @@
-var timeAndDay = $('#currentDay');
+var timeBlocks = [];
+var timeBlockTimes = ["09:00:00","10:00:00","11:00:00","12:00:00","13:00:00","14:00:00","15:00:00","16:00:00","17:00:00"];
 
-// function for updating time and date every second
-function updateCurrentTime() {
+function updateTime() {
+    $('#currentDay').text(moment().format('h:mm:ss a on MMMM Do, YYYY'))
+    setTimeout(updateTime, 1000);
+}
 
-    var date = new Date();
+$('#time-block-list').on('click', '#save-button', updateTextBlocks);
 
+function checkBlockHour() {
+
+    for (var j = 0; j < timeBlocks.length; j++) {
+
+        var difference = moment(`${timeBlockTimes[j]}`, 'HH:mm:ss').diff(moment(), 'minute');
+
+        if (difference <= -60) {
+            if ($(`#${timeBlocks[j]}`).hasClass('present')) {
+                $(`#${timeBlocks[j]}`).removeClass('present');
+                $(`#${timeBlocks[j]}`).addClass('past');
+            } else {
+                $(`#${timeBlocks[j]}`).addClass('past');
+            }
+        } else if (difference > -60 && difference <= 0) {
+            if ($(`#${timeBlocks[j]}`).hasClass('future')) {
+                $(`#${timeBlocks[j]}`).removeClass('future');
+                $(`#${timeBlocks[j]}`).addClass('present');
+            } else {
+                $(`#${timeBlocks[j]}`).addClass('present');
+            }
+        } else {
+            $(`#${timeBlocks[j]}`).addClass('future');
+        }
+    }
+    setTimeout(checkBlockHour, 3000);
+}
+
+function updateTextBlocks(event) {
+
+    var id =$(event.target).siblings().next().attr('id');
+
+    localStorage.setItem(id, $(`#${id}`).val());
+}
+
+function loadBlockData() {
+
+    for (var k = 0; k < timeBlocks.length; k++) {
+        $(`#${timeBlocks[k]}`).text(localStorage.getItem(timeBlocks[k]));
+    }
+}
+
+for (var i = 9; i <= 17; i++) {
+
+    var time = i;
     var timeOfDay = "AM";
-    var hours = date.getHours();
 
-    if (hours > 12) {
-        hours -= 12;
+    if (i === 12) {
         timeOfDay = "PM";
-    } else if (hours === 0) {
-        hours = 12;
-        timeOfDay = "AM";
-    } else {
-        timeOfDay = "AM";
+    } else if (i > 12) {
+        time -= 12;
+        timeOfDay = "PM";
     }
 
-    hours = timePadding(hours, 2);
+    $('#time-block-list').append(`<div id="${time}${timeOfDay}-block" class=row my-3>` +
+                                 `<div class="col-md-1 text-center hour pt-4">${time}${timeOfDay}</div>` +
+                                 `<textarea id="${time}${timeOfDay}-text-block" class="col-md-10"></textarea>` +
+                                 `<button id="save-button" class="col-md-1 saveBtn">Save</button></div>`);
 
-    var seconds = timePadding(date.getSeconds(), 2);
-    var minutes = timePadding(date.getMinutes(), 2);
-
-    timeAndDay.text(`${hours}:${minutes}:${seconds} ${timeOfDay} on ` +
-                    `${(date.getMonth() + 1)}/${date.getDate()}/${date.getFullYear()}`);
-
-    setTimeout(updateCurrentTime, 1000);
+    timeBlocks.push(`${time}${timeOfDay}-text-block`);
 }
 
-// adjusts hours, minutes, and seconds to correct amount of placeholder digits
-function timePadding(number, size) {
-    number = number.toString();
-    while (number.length < size) {
-        number = '0' + number;
-    }
-    return number;
-}
-
-updateCurrentTime();
+updateTime();
+checkBlockHour();
+loadBlockData();
