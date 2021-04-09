@@ -62,7 +62,7 @@ function updateTextBlocks(event) {
 }
 // event delegated listener; targets the parent container of the dynamically created
 // time blocks to listen for save button clicks
-$('#time-block-list').on('click', '#save-button', updateTextBlocks);
+$('#time-block-list').on('click', '.save-button', updateTextBlocks);
 
 // function that checks local storage for any saved block date on load
 function loadBlockData() {
@@ -91,7 +91,7 @@ for (var i = beginningTime; i <= endingTime; i++) {
     $('#time-block-list').append(`<div id="${time}${timeOfDay}-block" class=row my-3>` +
                                  `<div class="col-md-1 text-center hour pt-4">${time}${timeOfDay}</div>` +
                                  `<textarea id="${time}${timeOfDay}-text-block" class="col-md-10"></textarea>` +
-                                 `<button id="save-button" class="col-md-1 saveBtn">Save</button></div>`);
+                                 `<button class="col-md-1 saveBtn save-button">Save</button></div>`);
     // adds the ID of the text area for future processing into the time block array
     timeBlocks.push(`${time}${timeOfDay}-text-block`);
 }
